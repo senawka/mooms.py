@@ -1,4 +1,4 @@
-# To Do: allow for images to be included in the embed.
+# To Do: make images able to be included in the embed.
 import discord
 from discord.ext import commands
 import random
@@ -24,7 +24,15 @@ class Snipe(commands.Cog):
     @commands.command()
     async def snipe(self, ctx):
         channel_id = ctx.channel.id
-        if channel_id in self.deleted_messages:
+
+        with open('blacklisted_users.json', 'r') as f:
+            blacklisted_users_data = json.load(f)
+
+        blacklisted_user_ids = blacklisted_users_data.get("BlacklistedUsers", [])
+        
+        if str(ctx.author.id) in blacklisted_user_ids:
+            await ctx.send("You are blacklisted and cannot use this command.")
+        elif channel_id in self.deleted_messages:
             deleted_message = self.deleted_messages[channel_id]
             author = deleted_message.author
             content = deleted_message.content
@@ -51,7 +59,7 @@ class Snipe(commands.Cog):
             with open('elevated_users.json', 'r') as f:
                 elevated_users_data = json.load(f)
 
-            elevated_user_ids = [user["User ID"] for user in elevated_users_data["ElevatedUsers"]]
+            elevated_user_ids = [user["User ID"] for user in elevated_users_data.get("ElevatedUsers", [])]
             if str(ctx.author.id) in elevated_user_ids or ctx.author.guild_permissions.administrator or ctx.author.guild_permissions.manage_messages:
                 message = random.choice(self.no_deleted_messages)
                 await ctx.send(message)
