@@ -1,21 +1,21 @@
-# To Do: make images able to be included in the embed.
-# Currently: only text is sniped; images are not.
+# To Do: allow for images to be included in the embed.
 import discord
 from discord.ext import commands
 import random
+import json
 
 class Snipe(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.deleted_messages = {}
         self.no_deleted_messages = [
-        "Looks like there are no deleted messages to snipe. Keep an eye out for juicy content!",
-        "Sorry, nothing to snipe here.",
-        "No deleted messages to snipe, but don't worry, there's always more drama waiting to happen!",
-        "No deleted messages, no problem. Time to grab some popcorn and wait for the next snipe-worthy moment!",
-        "No deleted messages detected. Looks like everyone's on their best behavior!",
-        "No deleted messages found. Please stand by for further sniping opportunities.",
-    ]
+            "Looks like there are no deleted messages to snipe. Keep an eye out for juicy content!",
+            "Sorry, nothing to snipe here.",
+            "No deleted messages to snipe, but don't worry, there's always more drama waiting to happen!",
+            "No deleted messages, no problem. Time to grab some popcorn and wait for the next snipe-worthy moment!",
+            "No deleted messages detected. Looks like everyone's on their best behavior!",
+            "No deleted messages found. Please stand by for further sniping opportunities.",
+        ]
 
     @commands.Cog.listener()
     async def on_message_delete(self, message):
@@ -48,8 +48,15 @@ class Snipe(commands.Cog):
 
             await ctx.send(embed=embed)
         else:
-            message = random.choice(self.no_deleted_messages)
-            await ctx.send(message)
+            with open('elevated_users.json', 'r') as f:
+                elevated_users_data = json.load(f)
+
+            elevated_user_ids = [user["User ID"] for user in elevated_users_data["ElevatedUsers"]]
+            if str(ctx.author.id) in elevated_user_ids or ctx.author.guild_permissions.administrator or ctx.author.guild_permissions.manage_messages:
+                message = random.choice(self.no_deleted_messages)
+                await ctx.send(message)
+            else:
+                await ctx.send("You don't have permission to use this command.")
 
 def setup(bot):
     bot.add_cog(Snipe(bot))
