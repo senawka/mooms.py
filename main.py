@@ -5,8 +5,9 @@ from discord.ext import commands
 import asyncio
 
 async def start_bot():
-    bot = commands.Bot(command_prefix='m!', intents=discord.Intents.all(), help_command=None)
+    bot = commands.Bot(command_prefix='mooms ', intents=discord.Intents.all(), help_command=None)
     bot.load_extension('cogs.avatar_cog')
+    bot.load_extension('cogs.snipe_cog')
 
     @bot.event
     async def on_ready():
