@@ -1,4 +1,4 @@
-# To Do: make images able to be included in the embed.
+# To Do: make images able to be included in the embed. 
 import discord
 from discord.ext import commands
 import random
@@ -18,6 +18,13 @@ class Snipe(commands.Cog):
             "No deleted messages found. Please stand by for further sniping opportunities.",
         ]
 
+        self.elevated_user_ids = self.load_elevated_user_ids()
+
+    def load_elevated_user_ids(self):
+        with open(os.path.join('config', 'elevated_users.json'), 'r') as f:
+            elevated_users_data = json.load(f)
+            return [user["User ID"] for user in elevated_users_data.get("ElevatedUsers", [])]
+
     @commands.Cog.listener()
     async def on_message_delete(self, message):
         self.deleted_messages[message.channel.id] = message
@@ -25,6 +32,10 @@ class Snipe(commands.Cog):
     @commands.command()
     async def snipe(self, ctx):
         channel_id = ctx.channel.id
+        has_permissions = (
+            ctx.author.guild_permissions.administrator
+            or ctx.author.guild_permissions.manage_messages
+        )
 
         if channel_id in self.deleted_messages:
             deleted_message = self.deleted_messages[channel_id]
@@ -48,13 +59,12 @@ class Snipe(commands.Cog):
             else:
                 embed.description = f"**Deleted Message Sent:**\n{content}"
 
-            await ctx.send(embed=embed)
+            if str(ctx.author.id) in self.elevated_user_ids or has_permissions:
+                await ctx.send(embed=embed)
+            else:
+                await ctx.send("You don't have permission to use this command.")
         else:
-            with open(os.path.join('config', 'elevated_users.json'), 'r') as f:
-                elevated_users_data = json.load(f)
-
-            elevated_user_ids = [user["User ID"] for user in elevated_users_data.get("ElevatedUsers", [])]
-            if str(ctx.author.id) in elevated_user_ids or ctx.author.guild_permissions.administrator or ctx.author.guild_permissions.manage_messages:
+            if str(ctx.author.id) in self.elevated_user_ids or has_permissions:
                 message = random.choice(self.no_deleted_messages)
                 await ctx.send(message)
             else:
@@ -62,4 +72,3 @@ class Snipe(commands.Cog):
 
 def setup(bot):
     bot.add_cog(Snipe(bot))
-

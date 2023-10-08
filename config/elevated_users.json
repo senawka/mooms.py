@@ -1,14 +1,14 @@
 {
     "ElevatedUsers": [
         {
-            "User": "@senawka#0000",
+            "User": "@senawka",
             "Description": "Bot Creator",
             "User ID": "873387165722226688"
         },
         {
-            "User": "@EXAMPLE#0000",
-            "Description": "Example",
-            "User ID": "867288226277561388"
+            "User": "@EXAMPLE",
+            "Description": "Example of a Description",
+            "User ID": "000000000000000000"
         }
     ]
 }
